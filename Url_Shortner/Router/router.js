@@ -5,8 +5,4 @@ import { handleGenerateNewShortURL, handleGetAnalytics } from "../controllers/ur
 router.post('/' , handleGenerateNewShortURL);
 router.get("/analytics/:shortId" , handleGetAnalytics);
 
-
-
-
-
 export default router ;
