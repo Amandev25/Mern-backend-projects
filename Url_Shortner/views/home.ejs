@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sniplyx - Smart URL Shortener</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .navbar {
+      background-color: #ffffff10;
+    }
+
+    .container-box {
+      background: #fff;
+      color: #333;
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 600px;
+      margin-top: 80px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .brand {
+      font-weight: bold;
+      font-size: 2rem;
+      color: #0d6efd;
+    }
+
+    .qr-img {
+      max-width: 160px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      z-index: 9999;
+    }
+
+    #spinner {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- ✅ Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark px-3">
+    <div class="container-fluid">
+      <span class="navbar-brand brand">Sniplyx - Smart URL Shortener
+</span>
+      <div class="d-flex">
+        <a class="btn btn-outline-light me-2" href="#">Login</a>
+        <a class="btn btn-primary" href="#">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ✅ Main Box -->
+  <div class="container d-flex justify-content-center">
+    <div class="container-box text-center">
+      <p class="mb-4">Paste your long URL below to get a snappy, trackable short link with a downloadable QR code!</p>
+
+      <form id="urlForm">
+        <input type="url" class="form-control mb-3" id="longUrl" placeholder="https://example.com/my-long-url" required />
+        <button type="submit" class="btn btn-primary w-100">Shorten My Link 🔗</button>
+      </form>
+
+      <!-- ✅ Spinner -->
+      <div class="mt-3" id="spinner">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2">Generating your short link...</p>
+      </div>
+
+      <!-- ✅ Result -->
+      <div id="resultBox" class="mt-4" style="display: none;">
+        <h5>Your Sniplyx Link:</h5>
+        <a href="#" id="shortUrlLink" target="_blank" class="d-block mb-3 text-primary fw-bold"></a>
+
+        <div>
+          <h6>Scan or Download QR:</h6>
+          <img id="qrCode" src="" alt="QR Code" class="qr-img" />
+          <div class="mt-2">
+            <a id="downloadQr" href="#" download="sniplyx-qr.png" class="btn btn-sm btn-outline-dark">Download QR</a>
+          </div>
+        </div>
+
+        <button class="btn btn-outline-secondary mt-3" id="analyticsBtn">View Analytics 📊</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Toast Container -->
+  <div class="toast-container">
+    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          Short URL created successfully! 🚀
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const form = document.getElementById('urlForm');
+    const spinner = document.getElementById('spinner');
+    const resultBox = document.getElementById('resultBox');
+    const shortUrlLink = document.getElementById('shortUrlLink');
+    const qrCode = document.getElementById('qrCode');
+    const analyticsBtn = document.getElementById('analyticsBtn');
+    const downloadQr = document.getElementById('downloadQr');
+    const toast = new bootstrap.Toast(document.getElementById('successToast'));
+    let currentShortId = "";
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      spinner.style.display = 'block';
+      resultBox.style.display = 'none';
+
+      const url = document.getElementById('longUrl').value;
+      const res = await fetch('/url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+
+      const data = await res.json();
+      currentShortId = data.id;
+
+      const shortUrl = `${window.location.origin}/${data.id}`;
+      shortUrlLink.href = shortUrl;
+      shortUrlLink.textContent = shortUrl;
+
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(shortUrl)}&size=160x160`;
+      qrCode.src = qrApiUrl;
+      downloadQr.href = qrApiUrl;
+
+      spinner.style.display = 'none';
+      resultBox.style.display = 'block';
+      toast.show();
+    });
+
+    analyticsBtn.addEventListener('click', () => {
+      window.location.href = `/url/analytics/${currentShortId}`;
+    });
+  </script>
+</body>
+</html>
