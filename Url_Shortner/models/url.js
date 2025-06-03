@@ -10,6 +10,11 @@ const urlSchema = new mongoose.Schema({
         type : String,
         required : true,
     },
+    email: {
+        type : String,
+        unique :true,
+        default :null, // Allows email as a null option also...
+    },
     visitHistory: [{
         timestamp : { type: Number }
     }]
